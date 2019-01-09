@@ -293,7 +293,7 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 		defer r.recv(ctx)
 	}
 
-	path := string(ctx.Path())
+	path := string(ctx.URI().PathOriginal())
 	method := string(ctx.Method())
 	if root := r.trees[method]; root != nil {
 		if f, tsr := root.getValue(path, ctx); f != nil {
