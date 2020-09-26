@@ -324,6 +324,9 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 	if root := r.trees[method]; root != nil {
 		if f, tsr := root.getValue(path, ctx); f != nil {
 			f(ctx)
+			if r.HandleCORS.Handle {
+				handleCORS(ctx, r.HandleCORS)
+			}
 			return
 		} else if method != "CONNECT" && path != "/" {
 			code := 301 // Permanent redirect, request with GET method
@@ -375,6 +378,8 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 		if r.HandleOPTIONS {
 			if r.HandleCORS.Handle {
 				handleCORS(ctx, r.HandleCORS)
+				ctx.Response.Header.Set("Access-Control-Allow-Methods", "OPTIONS")
+				return
 			} else {
 				if allow := r.allowed(path, method); len(allow) > 0 {
 					ctx.Response.Header.Set("Allow", allow)

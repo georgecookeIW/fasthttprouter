@@ -9,6 +9,8 @@ If HandleOPTIONS is enabled, you can also enable the router to handle the OPTION
 
 The router will send the appropriate CORS Access-Control headers, based on configuration of the `router.HandleCORS` object, as the server response.
 
+If HandleOPTIONS is not enabled, you can still set Access-Control headers for other HTTP Methods. 
+
 ```go
 type CORS struct {
   // Tells the router to handle OPTIONS as CORS
