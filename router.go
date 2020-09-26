@@ -74,6 +74,7 @@
 package fasthttprouter
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -119,6 +120,10 @@ type Router struct {
 	// Custom OPTIONS handlers take priority over automatic replies.
 	HandleOPTIONS bool
 
+	// If HandleOPTIONS is enabled, the following is used to configure
+	// the server's response to pre-flight CORS requests
+	HandleCORS CORS
+
 	// Configurable http.Handler which is called when no matching route is
 	// found. If it is not set, http.NotFound is used.
 	NotFound fasthttp.RequestHandler
@@ -138,6 +143,24 @@ type Router struct {
 	PanicHandler func(*fasthttp.RequestCtx, interface{})
 }
 
+// Configuration options for Cross-Origin Resource Sharing (CORS)
+type CORS struct {
+	// Tells the router to handle OPTIONS as pre-flight CORS requests
+	Handle bool
+
+	// Sets the allowed origins for the server
+	AllowOrigin string
+
+	//Sets the allowed http methods for the server
+	AllowMethods []string
+
+	// Sets the allowed Headers for the server
+	AllowHeaders []string
+
+	// Max time for the follow-up requests
+	MaxAge int
+}
+
 // New returns a new initialized Router.
 // Path auto-correction, including trailing slashes, is enabled by default.
 func New() *Router {
@@ -146,6 +169,7 @@ func New() *Router {
 		RedirectFixedPath:      true,
 		HandleMethodNotAllowed: true,
 		HandleOPTIONS:          true,
+		HandleCORS:             CORS { Handle: false },
 	}
 }
 
@@ -347,9 +371,21 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 	if method == "OPTIONS" {
 		// Handle OPTIONS requests
 		if r.HandleOPTIONS {
-			if allow := r.allowed(path, method); len(allow) > 0 {
-				ctx.Response.Header.Set("Allow", allow)
-				return
+			if r.HandleCORS.Handle {
+				for _, method := range r.HandleCORS.AllowMethods {
+					ctx.Response.Header.Set("Access-Control-Allow-Methods", method)
+				}
+				for _, header := range r.HandleCORS.AllowHeaders {
+					ctx.Response.Header.Set("Access-Control-Allow-Headers", header)
+				}
+				ctx.Response.Header.Set("Access-Control-Allow-Origin", r.HandleCORS.AllowOrigin)
+				ctx.Response.Header.Set("Access-Control-Max-Age", strconv.Itoa(r.HandleCORS.MaxAge))
+				ctx.SetStatusCode(fasthttp.StatusNoContent)
+			} else {
+				if allow := r.allowed(path, method); len(allow) > 0 {
+					ctx.Response.Header.Set("Allow", allow)
+					return
+				}
 			}
 		}
 	} else {

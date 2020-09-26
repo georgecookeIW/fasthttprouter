@@ -1,3 +1,8 @@
+# Forked from github.com/buaazp/fasthttprouter
+
+Hats off to the creators!
+Just wanted to add some CORS config to this...
+
 # FastHttpRouter
 [![Build Status](https://travis-ci.org/buaazp/fasthttprouter.svg?branch=master)](https://travis-ci.org/buaazp/fasthttprouter)
 [![Coverage Status](https://coveralls.io/repos/buaazp/fasthttprouter/badge.svg?branch=master&service=github)](https://coveralls.io/github/buaazp/fasthttprouter?branch=master)

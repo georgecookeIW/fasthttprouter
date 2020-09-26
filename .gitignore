@@ -1,3 +1,9 @@
+vendor
+.idea/
+
+go.mod
+go.sum
+
 *.swp
 
 coverage.out
