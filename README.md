@@ -3,6 +3,43 @@
 Hats off to the creators!
 Just wanted to add some CORS config to this...
 
+## CORS
+
+If HandleOPTIONS is enabled, you can also enable the router to handle the OPTIONS request as a CORS pre-flight OPTIONS request. 
+
+The router will send the appropriate CORS Access-Control headers, based on configuration of the `router.HandleCORS` object, as the server response.
+
+```go
+type CORS struct {
+  // Tells the router to handle OPTIONS as CORS
+  Handle bool
+
+  // Sets the allowed origins for the server
+  AllowOrigin string
+
+  //Sets the allowed http methods for the server
+  AllowMethods []string
+
+  // Sets the allowed Headers for the server
+  AllowHeaders []string
+
+  // Max time for the follow-up requests
+  MaxAge int
+}
+``` 
+
+If CORS is enabled and the other options not configured the following default CORS headers are sent:
+
+```http request
+Response
+Access-Control-Allow-Origin: *
+Access-Control-Allow-Headers: *
+Access-Control-Allow-Methods: *
+Access-Control-Max-Age: 86400
+```
+
+Suggestions welcome.
+
 # FastHttpRouter
 [![Build Status](https://travis-ci.org/buaazp/fasthttprouter.svg?branch=master)](https://travis-ci.org/buaazp/fasthttprouter)
 [![Coverage Status](https://coveralls.io/repos/buaazp/fasthttprouter/badge.svg?branch=master&service=github)](https://coveralls.io/github/buaazp/fasthttprouter?branch=master)

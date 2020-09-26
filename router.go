@@ -120,8 +120,10 @@ type Router struct {
 	// Custom OPTIONS handlers take priority over automatic replies.
 	HandleOPTIONS bool
 
-	// If HandleOPTIONS is enabled, the following is used to configure
-	// the server's response to pre-flight CORS requests
+	// If HandleOPTIONS is enabled, you can also enable (CORS.Handle bool) the
+	// router to handle the OPTIONS request as a CORS pre-flight request.
+	// If so, you can configure Allowed Methods, Headers, Origin and MaxAge of
+	// the server response.
 	HandleCORS CORS
 
 	// Configurable http.Handler which is called when no matching route is
@@ -145,7 +147,7 @@ type Router struct {
 
 // Configuration options for Cross-Origin Resource Sharing (CORS)
 type CORS struct {
-	// Tells the router to handle OPTIONS as pre-flight CORS requests
+	// Tells the router to handle OPTIONS as CORS
 	Handle bool
 
 	// Sets the allowed origins for the server
@@ -169,7 +171,7 @@ func New() *Router {
 		RedirectFixedPath:      true,
 		HandleMethodNotAllowed: true,
 		HandleOPTIONS:          true,
-		HandleCORS:             CORS { Handle: false },
+		HandleCORS:             CORS { Handle: false, MaxAge: 86400 },
 	}
 }
 
@@ -372,15 +374,7 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 		// Handle OPTIONS requests
 		if r.HandleOPTIONS {
 			if r.HandleCORS.Handle {
-				for _, method := range r.HandleCORS.AllowMethods {
-					ctx.Response.Header.Set("Access-Control-Allow-Methods", method)
-				}
-				for _, header := range r.HandleCORS.AllowHeaders {
-					ctx.Response.Header.Set("Access-Control-Allow-Headers", header)
-				}
-				ctx.Response.Header.Set("Access-Control-Allow-Origin", r.HandleCORS.AllowOrigin)
-				ctx.Response.Header.Set("Access-Control-Max-Age", strconv.Itoa(r.HandleCORS.MaxAge))
-				ctx.SetStatusCode(fasthttp.StatusNoContent)
+				handleCORS(ctx, r.HandleCORS)
 			} else {
 				if allow := r.allowed(path, method); len(allow) > 0 {
 					ctx.Response.Header.Set("Allow", allow)
@@ -412,4 +406,35 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 		ctx.Error(fasthttp.StatusMessage(fasthttp.StatusNotFound),
 			fasthttp.StatusNotFound)
 	}
+}
+
+func handleCORS(ctx *fasthttp.RequestCtx, config CORS) {
+	// populate Allowed Methods
+	if len(config.AllowMethods) == 0 {
+		ctx.Response.Header.Set("Access-Control-Allow-Methods", "*")
+	} else {
+		for _, method := range config.AllowMethods {
+			ctx.Response.Header.Set("Access-Control-Allow-Methods", method)
+		}
+	}
+	// populate Allowed Headers
+	if len(config.AllowHeaders) == 0 {
+		ctx.Response.Header.Set("Access-Control-Allow-Headers", "*")
+	} else {
+		for _, header := range config.AllowHeaders {
+			ctx.Response.Header.Set("Access-Control-Allow-Headers", header)
+		}
+	}
+	// populate Allowed Origin
+	var origin string
+	if config.AllowOrigin == "" {
+		origin = "*"
+	} else {
+		origin = config.AllowOrigin
+	}
+	ctx.Response.Header.Set("Access-Control-Allow-Origin", origin)
+	// populate Max Age
+	ctx.Response.Header.Set("Access-Control-Max-Age", strconv.Itoa(config.MaxAge))
+	// set status code to 204
+	ctx.SetStatusCode(fasthttp.StatusNoContent)
 }
