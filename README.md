@@ -40,6 +40,12 @@ Access-Control-Max-Age: 86400
 
 Suggestions welcome.
 
+## Licenses
+
+Retained the original [HttpRouter](HttpRouterLicense)
+
+Added [FastHttpLicense](FastHttpRouterLicense)
+
 # FastHttpRouter
 [![Build Status](https://travis-ci.org/buaazp/fasthttprouter.svg?branch=master)](https://travis-ci.org/buaazp/fasthttprouter)
 [![Coverage Status](https://coveralls.io/repos/buaazp/fasthttprouter/badge.svg?branch=master&service=github)](https://coveralls.io/github/buaazp/fasthttprouter?branch=master)
