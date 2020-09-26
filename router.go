@@ -379,6 +379,8 @@ func (r *Router) Handler(ctx *fasthttp.RequestCtx) {
 			if r.HandleCORS.Handle {
 				handleCORS(ctx, r.HandleCORS)
 				ctx.Response.Header.Set("Access-Control-Allow-Methods", "OPTIONS")
+				// set status code to 204
+				ctx.SetStatusCode(fasthttp.StatusNoContent)
 				return
 			} else {
 				if allow := r.allowed(path, method); len(allow) > 0 {
@@ -440,6 +442,4 @@ func handleCORS(ctx *fasthttp.RequestCtx, config CORS) {
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", origin)
 	// populate Max Age
 	ctx.Response.Header.Set("Access-Control-Max-Age", strconv.Itoa(config.MaxAge))
-	// set status code to 204
-	ctx.SetStatusCode(fasthttp.StatusNoContent)
 }
